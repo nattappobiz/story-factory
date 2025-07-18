@@ -1,4 +1,3 @@
-<!-- START OF FILE: frontend/src/routes/+page.svelte (Final Version) -->
 <script lang="ts">
     import { onMount } from 'svelte';
     import { quintOut } from 'svelte/easing';
@@ -8,6 +7,10 @@
     import { musicOptions } from '$lib/musicOptions.js';
     import { aspectRatioOptions } from '$lib/aspectRatioOptions.js';
     import { ageGroupOptions } from '$lib/ageGroupOptions.js';
+
+    // 💡 เพิ่ม URL ของ Backend API ของคุณที่นี่
+    // 💡 ข้อแนะนำ: สำหรับ Production ควรอ่านค่านี้จาก Environment Variable (เช่น import.meta.env.VITE_BACKEND_API_URL)
+    const BACKEND_API_URL = 'https://story-factory-api-3349538920.asia-southeast1.run.app';
 
     interface StoryLine { scene: number; text: string; emotion: string; }
     interface StoryboardItem { prompt: string; file: File | null; previewUrl: string | null; }
@@ -48,7 +51,12 @@
                 music_filename: selectedMusic === 'none' ? 'none' : `${selectedMusic}.mp3`,
                 aspect_ratio: selectedAspectRatio, music_volume: selectedMusicVolume, transition_style: selectedTransition,
             };
-            const response = await fetch('/api/agent/create-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+            // 💡 แก้ไข URL ตรงนี้
+            const response = await fetch(`${BACKEND_API_URL}/agent/create-video`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(requestBody) 
+            });
             if (!response.ok) { throw new Error((await response.json()).detail || 'Failed to start.'); }
             const data = await response.json();
             jobId = data.job_id;
@@ -62,7 +70,12 @@
         if (!userPrompt.trim()) { globalErrorMessage = 'Please enter your story idea.'; return; }
         isLoading = true; globalErrorMessage = '';
         try {
-            const response = await fetch('/api/manual/generate-script', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: userPrompt, image_style: 'Pixar' }) });
+            // 💡 แก้ไข URL ตรงนี้
+            const response = await fetch(`${BACKEND_API_URL}/manual/generate-script`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ prompt: userPrompt, image_style: 'Pixar' }) 
+            });
             if (!response.ok) { throw new Error((await response.json()).detail || 'Failed to generate story.'); }
             const data = await response.json();
             storyScript = data.story_script;
@@ -98,7 +111,11 @@
         formData.append('transition_style', selectedTransition);
         storyboardItems.forEach((item, index) => { if(item.file) formData.append('images', item.file, `image_${index}.png`); });
         try {
-            const response = await fetch('/api/manual/compile-video', { method: 'POST', body: formData });
+            // 💡 แก้ไข URL ตรงนี้
+            const response = await fetch(`${BACKEND_API_URL}/manual/compile-video`, { 
+                method: 'POST', 
+                body: formData 
+            });
             if (!response.ok) { throw new Error((await response.json()).detail || 'Failed to start.'); }
             const data = await response.json();
             jobId = data.job_id;
@@ -113,7 +130,8 @@
         checkStatusInterval = setInterval(async () => {
             if (!jobId) return;
             try {
-                const response = await fetch(`/api/jobs/${jobId}/status`); 
+                // 💡 แก้ไข URL ตรงนี้
+                const response = await fetch(`${BACKEND_API_URL}/jobs/${jobId}/status`); 
                 if (!response.ok) { 
                     if (response.status === 404) { console.warn(`Job ${jobId} not found, retrying...`); return; }
                     throw new Error('Could not get status.');
@@ -266,7 +284,6 @@
             <div class="card-body items-center p-6 md:p-8">
                 <h2 class="card-title text-3xl">✨ Your Video is Ready! ✨</h2>
                 <figure class="my-6 w-full max-w-2xl">
-                    <!-- svelte-ignore a11y-media-has-caption -->
                     <video class="rounded-lg shadow-md" controls src={finalVideoUrl} playsinline></video>
                 </figure>
                 <div class="card-actions">
@@ -277,4 +294,3 @@
         </div>
     {/if}
 </div>
-<!-- END OF FILE -->
