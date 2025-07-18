@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from contextlib import asynccontextmanager
 import logging
+from fastapi.middleware.cors import CORSMiddleware
 
 # [แก้ไข] Import config เข้ามาใช้งาน
 from app import config
@@ -61,7 +62,19 @@ async def lifespan(app: FastAPI):
     logging.info("--- Application Shutdown ---")
 
 app = FastAPI(title="Story Factory API", lifespan=lifespan)
+origins = [
+    "http://localhost:5173",          # อนุญาตให้ Local dev server เข้าถึงได้
+    "https://story-factory.vercel.app/", # <-- [สำคัญ] อนุญาตให้เว็บ Vercel ของคุณเข้าถึงได้
+    # ใส่ URL ของ Vercel ที่คุณได้มาที่นี่
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # อนุญาตทุก Method (GET, POST, etc.)
+    allow_headers=["*"], # อนุญาตทุก Header
+)
 # [แก้ไข] ใช้ app.mount แค่บรรทัดเดียว โดยอ้างอิงจาก config
 app.mount("/content", StaticFiles(directory=config.CONTENT_DIR), name="content")
 
