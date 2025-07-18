@@ -20,4 +20,4 @@ EXPOSE 8080
 
 # 7. คำสั่งที่จะรันเมื่อ Container เริ่มทำงาน
 # ใช้ gunicorn ซึ่งเหมาะสำหรับ Production มากกว่า uvicorn dev server
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:$PORT"]
+CMD exec gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind "0.0.0.0:$PORT"
