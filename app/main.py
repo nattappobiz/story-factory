@@ -64,8 +64,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Story Factory API", lifespan=lifespan)
 origins = [
     "http://localhost:5173",          # อนุญาตให้ Local dev server เข้าถึงได้
-    "https://story-factory.vercel.app/", # <-- [สำคัญ] อนุญาตให้เว็บ Vercel ของคุณเข้าถึงได้
-    # ใส่ URL ของ Vercel ที่คุณได้มาที่นี่
+    "https://story-factory.vercel.app", # <-- แก้ไขตรงนี้: ลบ '/' ตัวสุดท้ายออก
+    # ถ้ายังไม่ได้ผล อาจจะลองเพิ่มแบบมี '/' กลับเข้าไปด้วย
+    # "https://story-factory.vercel.app/",
 ]
 
 app.add_middleware(
