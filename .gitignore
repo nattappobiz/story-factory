@@ -1,0 +1,69 @@
+# =================================================================
+# === Python / Backend Dependencies & Caches
+# =================================================================
+# Virtual environment folder
+venv/
+__pycache__/
+
+# Compiled Python files
+*.pyc
+
+# =================================================================
+# === Node.js / Frontend Dependencies & Build Artifacts
+# =================================================================
+# Node modules folder (at root and inside frontend)
+/node_modules
+/frontend/node_modules
+
+# SvelteKit build output and caches
+/frontend/.svelte-kit
+/frontend/build
+.svelte-kit/
+build/
+
+# General build output folders
+.output
+.vercel
+.netlify
+.wrangler
+
+# Vite cache files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# =================================================================
+# === Secret Files & Sensitive Data (VERY IMPORTANT!)
+# =================================================================
+# All environment files
+.env
+.env.*
+!.env.example # <-- This allows you to commit an example .env file
+
+# All JSON key files
+*.json
+# We make exceptions for files that are safe to commit
+!package.json
+!package-lock.json
+!tsconfig.json
+!jsconfig.json
+!svelte.config.js
+!postcss.config.js
+!tailwind.config.js
+!prettier.config.js
+!eslint.config.js
+
+# Database and Lock files
+*.db
+*.lock
+
+# =================================================================
+# === IDE & OS Specific Files
+# =================================================================
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+
+# macOS
+.DS_Store
