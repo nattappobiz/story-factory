@@ -13,11 +13,32 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 # 5. คัดลอกโค้ดแอปพลิเคชันทั้งหมดเข้าไป
 COPY ./app /code/app
 COPY ./assets /code/assets
-# (เราจะไม่คัดลอกไฟล์ .env หรือ .json ที่เป็นความลับเข้าไป)
 
-# 6. บอกให้ Container รู้ว่าแอปของเราจะรันบน Port 8080
+# 6. ตั้งค่า PORT environment variable (สำคัญ!)
+ENV PORT=8080
+
+# 7. ตั้งค่า Python environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/code
+
+# 8. สร้าง user ที่ไม่ใช่ root เพื่อความปลอดภัย (optional)
+RUN adduser --disabled-password --gecos '' appuser
+USER appuser
+
+# 9. บอกให้ Container รู้ว่าแอปของเราจะรันบน Port 8080
 EXPOSE 8080
 
-# 7. คำสั่งที่จะรันเมื่อ Container เริ่มทำงาน
-# ใช้ gunicorn ซึ่งเหมาะสำหรับ Production มากกว่า uvicorn dev server
-CMD exec gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind "0.0.0.0:$PORT"
+# 10. ระบุคำสั่งที่จะรันเมื่อ Container เริ่มต้น
+# เลือกใช้อย่างใดอย่างหนึ่งตามที่คุณใช้:
+
+# สำหรับ FastAPI + Uvicorn:
+CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"]
+
+# สำหรับ Flask:
+# CMD ["sh", "-c", "python -m flask run --host 0.0.0.0 --port $PORT"]
+
+# สำหรับ Django:
+# CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:$PORT"]
+
+# สำหรับ Python script ธรรมดา:
+# CMD ["python", "app/main.py"]
