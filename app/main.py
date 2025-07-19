@@ -85,3 +85,19 @@ app = FastAPI(
     description="API to turn ideas into animated stories.",
     version="1.0.0",
     lifespan=lifespan
+)
+
+# Mount static files (ถ้าคุณมีโฟลเดอร์ static ในโปรเจกต์)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# CORS Middleware (ปรับ origins ตามที่คุณต้องการ)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # หรือกำหนดเฉพาะ origin ที่ต้องการ
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include API endpoints (ตรวจสอบว่า endpoints.router มีจริงใน app/api/endpoints.py)
+app.include_router(endpoints.router)
