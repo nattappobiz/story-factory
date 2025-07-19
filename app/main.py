@@ -1,35 +1,51 @@
-from dotenv import load_dotenv
-load_dotenv()
-
+# =========================================================
+#  1. Imports (จัดเรียงไว้ด้านบนทั้งหมด)
+# =========================================================
 import os
+import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
-import logging
+
+# .env file loader
+from dotenv import load_dotenv
+
+# FastAPI and Middleware
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-# [แก้ไข] Import config เข้ามาใช้งาน
-from app import config
+# Google Cloud & Vertex AI
+import vertexai
+from google.cloud import texttospeech
+from vertexai.preview.vision_models import ImageGenerationModel
+from vertexai.generative_models import GenerativeModel
 
-# ตั้งค่า Logging (ถูกต้องแล้ว)
+# Application-specific imports
+from app.services import tts_service, image_generation_service, gemini_service
+from app.api import endpoints
+from app import config # สมมติว่ามีการใช้ไฟล์ config
+
+# =========================================================
+#  2. Initial Setup
+# =========================================================
+# โหลด Environment Variables จากไฟล์ .env
+load_dotenv()
+
+# ตั้งค่า Logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(module)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-
-# [แก้ไข] Import library และ service ทั้งหมดที่เราต้องการ
-import vertexai
-from google.cloud import texttospeech
-from vertexai.preview.vision_models import ImageGenerationModel
-from vertexai.generative_models import GenerativeModel
-from app.services import tts_service, image_generation_service, gemini_service
-from app.api import endpoints
-
+# =========================================================
+#  3. Lifespan Manager (สำหรับ Startup/Shutdown Events)
+# =========================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    จัดการการเชื่อมต่อกับ Service ภายนอกตอนเปิดและปิดแอปพลิเคชัน
+    """
     logging.info("--- Application Startup: Initializing Google Cloud services... ---")
     try:
         project_id = os.environ["GCP_PROJECT_ID"]
@@ -45,7 +61,7 @@ async def lifespan(app: FastAPI):
         logging.info("--- [STARTUP] Creating API clients and models... ---")
         google_tts_client = texttospeech.TextToSpeechClient()
         imagen_model = ImageGenerationModel.from_pretrained("imagen-3.0-generate-002")
-        gemini_model = GenerativeModel("gemini-2.5-pro")
+        gemini_model = GenerativeModel("gemini-1.5-pro") # อัปเดตเป็นโมเดลที่แนะนำ
 
         logging.info("--- [STARTUP] Injecting dependencies into services... ---")
         tts_service.set_tts_client(google_tts_client)
@@ -54,12 +70,18 @@ async def lifespan(app: FastAPI):
 
         logging.info("--- [SUCCESS] All services initialized and injected. ---")
 
-    except (KeyError, ValueError, Exception) as e:
-        logging.exception("CRITICAL STARTUP ERROR: Failed to initialize Google Cloud services.")
+    except (KeyError, ValueError) as e:
+        logging.exception(f"CRITICAL STARTUP ERROR: {e}")
 
-    yield 
+    yield
+    
     logging.info("--- Application Shutdown ---")
 
-app = FastAPI(title="Story Factory API", lifespan=lifespan)
-
-# แนะนำให้ใส่ origin เป็นแบบไม่มี '/' ท้าย และควรใส่ตามจริงเท่านั้น
+# =========================================================
+#  4. FastAPI App Instantiation and Middleware
+# =========================================================
+app = FastAPI(
+    title="✨ AI Story Factory API ✨",
+    description="API to turn ideas into animated stories.",
+    version="1.0.0",
+    lifespan=lifespan
