@@ -46,12 +46,12 @@ async def lifespan(app: FastAPI):
         logging.info("--- [STARTUP] Creating API clients and models... ---")
         google_tts_client = texttospeech.TextToSpeechClient()
         imagen_model = ImageGenerationModel.from_pretrained("imagen-3.0-generate-002")
-        gemini_model = GenerativeModel("gemini-2.5-pro") # <-- เพิ่ม
+        gemini_model = GenerativeModel("gemini-2.5-pro")
         
         logging.info("--- [STARTUP] Injecting dependencies into services... ---")
         tts_service.set_tts_client(google_tts_client)
         image_generation_service.set_image_model(imagen_model)
-        gemini_service.set_gemini_model(gemini_model) # <-- เพิ่ม
+        gemini_service.set_gemini_model(gemini_model)
         
         logging.info("--- [SUCCESS] All services initialized and injected. ---")
 
@@ -64,9 +64,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Story Factory API", lifespan=lifespan)
 origins = [
     "http://localhost:5173",          # อนุญาตให้ Local dev server เข้าถึงได้
-    "https://story-factory.vercel.app", # <-- แก้ไขตรงนี้: ลบ '/' ตัวสุดท้ายออก
-    # ถ้ายังไม่ได้ผล อาจจะลองเพิ่มแบบมี '/' กลับเข้าไปด้วย
-    # "https://story-factory.vercel.app/",
+    "https://story-factory.vercel.app",   # <<-- แบบไม่มี '/' ท้าย
+    "https://story-factory.vercel.app/",  # <<-- เพิ่ม: แบบมี '/' ท้าย
 ]
 
 app.add_middleware(
@@ -76,12 +75,8 @@ app.add_middleware(
     allow_methods=["*"], # อนุญาตทุก Method (GET, POST, etc.)
     allow_headers=["*"], # อนุญาตทุก Header
 )
-# [แก้ไข] ใช้ app.mount แค่บรรทัดเดียว โดยอ้างอิงจาก config
-app.mount("/content", StaticFiles(directory=config.CONTENT_DIR), name="content")
 
-# [แก้ไข] ลบบรรทัดที่ซ้ำซ้อนและประกาศตัวแปรที่ไม่จำเป็นออก
-# STATIC_CONTENT_DIR = Path(__file__).parent / "generated_content" <-- ลบ
-# app.mount("/content", StaticFiles(directory=STATIC_CONTENT_DIR), name="content") <-- ลบ
+app.mount("/content", StaticFiles(directory=config.CONTENT_DIR), name="content")
 
 app.include_router(endpoints.router, prefix="/api")
 
@@ -89,4 +84,4 @@ app.include_router(endpoints.router, prefix="/api")
 async def read_root():
     return {"message": "Welcome to the Story Factory! Visit /docs to try the API."}
 
-# --- END OF FILE: app/main.py ---
+# --- END OF FILE ---
