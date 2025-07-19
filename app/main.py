@@ -93,7 +93,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # CORS Middleware (ปรับ origins ตามที่คุณต้องการ)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # หรือกำหนดเฉพาะ origin ที่ต้องการ
+    allow_origins=["https://story-factory.vercel.app"],  # หรือกำหนดเฉพาะ origin ที่ต้องการ
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
