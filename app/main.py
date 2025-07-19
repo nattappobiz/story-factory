@@ -61,7 +61,7 @@ async def lifespan(app: FastAPI):
         logging.info("--- [STARTUP] Creating API clients and models... ---")
         google_tts_client = texttospeech.TextToSpeechClient()
         imagen_model = ImageGenerationModel.from_pretrained("imagen-3.0-generate-002")
-        gemini_model = GenerativeModel("gemini-1.5-pro") # อัปเดตเป็นโมเดลที่แนะนำ
+        gemini_model = GenerativeModel("gemini-2.5-pro") # อัปเดตเป็นโมเดลที่แนะนำ
 
         logging.info("--- [STARTUP] Injecting dependencies into services... ---")
         tts_service.set_tts_client(google_tts_client)
